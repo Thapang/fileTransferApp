@@ -5,6 +5,7 @@ import  type { Request, Response } from "express";
 
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import sendRouter from "./routes/send.route.js";
+import receiveRouter from "./routes/receive.route.js";
 
 dotenv.config();
 
@@ -30,7 +31,9 @@ app.get("/hello", (req: Request, res: Response) => {
   res.send("hello");
 });
 
-app.use("/api/v1/send/",sendRouter)
+app.use("/api/v1/send/",sendRouter);
+
+app.use("/api/v1/receive/",receiveRouter);
 
 
 

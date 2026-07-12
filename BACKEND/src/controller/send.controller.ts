@@ -1,6 +1,6 @@
 import type { Request,Response,NextFunction } from "express";
 
-import {generateSixDigitCode, hashCode} from "../helper.js";
+import {AppError, generateSixDigitCode, hashCode} from "../helper.js";
 
 
 import { generateKey, senderAnswers, senderInfo } from "../services/send.service.js";
@@ -21,7 +21,7 @@ export const generate = async (req: Request,res: Response,next: NextFunction) =>
   } catch (error) {
     next(error);
   }
-};
+}
 
 
 export const sendInfo = async (req:Request,res:Response,next:NextFunction)=>{
@@ -29,8 +29,13 @@ export const sendInfo = async (req:Request,res:Response,next:NextFunction)=>{
     try{
 
         const code:string=req.body.code
-        const sdp:any=req.body.sdp
-        const iceCandidates:any=req.body.iceCandidates
+        const sdp:unknown=req.body.sdp
+        const iceCandidates:unknown=req.body.iceCandidates
+
+        if (!code || !sdp || !iceCandidates) {
+            throw new AppError("Missing required fields", 400);
+        }
+
 
         const encryptCode=hashCode(code);
 
@@ -45,15 +50,19 @@ export const sendInfo = async (req:Request,res:Response,next:NextFunction)=>{
         next(error);
     };
 
-};
+}
 
 
 export const sendAnswers= async (req:Request,res:Response,next:NextFunction)=>{
     try{
 
         const code:string=req.body.code
-        const sdp:any=req.body.sdp
-        const iceCandidates:any=req.body.iceCandidates
+        const sdp:unknown=req.body.sdp
+        const iceCandidates:unknown=req.body.iceCandidates
+
+        if (!code || !sdp || !iceCandidates) {
+            throw new AppError("Missing required fields", 400);
+        }
 
         const encryptCode=hashCode(code);
 
@@ -67,4 +76,4 @@ export const sendAnswers= async (req:Request,res:Response,next:NextFunction)=>{
     } catch (error){
         next(error);
     };
-};
+}
