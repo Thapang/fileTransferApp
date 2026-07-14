@@ -5,6 +5,6 @@ const receiveRouter=Router();
 
 receiveRouter.get("/receiveSenderInfo",rsi);
 
-receiveRouter.get("/receiveAnswers",rsa);
+receiveRouter.get("/receiveAnswers/:code",rsa);
 
 export default receiveRouter;

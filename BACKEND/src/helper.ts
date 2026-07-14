@@ -1,6 +1,6 @@
 // hash.ts
 import crypto from "node:crypto";
-import redisClient from "./db.js";
+//import redisClient from "./db.js";
 
 export function hashCode(code: string): string {
   return crypto
@@ -9,11 +9,11 @@ export function hashCode(code: string): string {
     .digest("hex");
 }
 
-export async function codeExists(code: string): Promise<boolean> {
-  const hash = hashCode(code);
+// export async function codeExists(code: string): Promise<boolean> {
+//   const hash = hashCode(code);
 
-  return (await redisClient.exists(`user:${hash}`)) === 1;
-}
+//   return (await redisClient.exists(`user:${hash}`)) === 1;
+// }
 
 export function generateSixDigitCode(): string {
   return crypto.randomInt(100000, 1000000).toString();

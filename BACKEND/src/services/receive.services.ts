@@ -1,34 +1,43 @@
-import redisClient, { subscriberClient } from "../db.js";
+import {redisClient,  subscriberClient } from "../db.js";
 import { AppError } from "../helper.js";
 
 
 export const receiveInfo = async (code: string) => {
-  try {
-    const key = `user:${code}`;
+    try {
 
-    const exists = await redisClient.exists(key);
+        const key = `user:${code}`;
 
-    if (!exists) {
-      throw new AppError("Code not found", 404);
+        const exists = await redisClient.exists(key);
+
+        if (!exists) {
+            throw new AppError("Code not found", 404);
+        }
+
+        const data = await redisClient.hGetAll(key);
+
+        console.log("Redis Data:", data);
+
+        if (!data.senderSDP || !data.senderIceCandidates) {
+            throw new AppError("Sender info not ready", 404);
+        }
+
+        return {
+            sdp: JSON.parse(data.senderSDP),
+            ice: JSON.parse(data.senderIceCandidates),
+        };
+
+    } catch (error) {
+
+        if (error instanceof AppError) {
+            throw error;
+        }
+
+        console.error(error);
+
+        throw new AppError("Cannot get the data", 500);
+
     }
-
-    const data = await redisClient.hGetAll(key);
-
-    return {
-      sdp: data.senderSDP,
-      ice: data.senderIceCandidates,
-    };
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
-    }
-
-    throw new AppError("Cannot get the data", 500);
-  }
 };
-
-
-
 
 export const waitForAnswer = async (
   code: string
@@ -41,6 +50,8 @@ export const waitForAnswer = async (
       .subscribe(`ch:${code}`, async (message) => {
         try {
           const data = JSON.parse(message);
+
+          console.log("sub data",data);
 
           await subscriberClient.unsubscribe(`ch:${code}`);
 

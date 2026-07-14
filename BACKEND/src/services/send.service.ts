@@ -1,15 +1,22 @@
-import redisClient, { subscriberClient } from "../db.js";
+import {redisClient, subscriberClient} from "../db.js";
 import { AppError, hashCode } from "../helper.js";
 
 
-export const generateKey = async (code: string) => {
+export const generateKey = async (code:string) => {
   try {
-    await redisClient.hSet(`user:${code}`, {
+    const key=`user:${code}`;
+
+    console.log("key:",key);
+
+    await redisClient.hSet(key, {
       status: "0"
     });
 
+    console.log(`user:${code}`)
+
     return true;
   } catch (error) {
+    console.error(error); // add this
     throw new AppError("Cannot create key", 500);
   }
 }
@@ -57,8 +64,9 @@ export const senderAnswers = async (code: string,answerSDP: unknown,answerIceCan
             status:"completed"
         });
 
+        console.log("published channel:", `ch:${code}`);
 
-         await redisClient.publish(
+         await subscriberClient.publish(
             `ch:${code}`,
             JSON.stringify({
             answerSDP,
@@ -87,7 +95,7 @@ export const remove=async(code:string)=>{
         throw new AppError("Code not found", 404);
     }
 
-    await redisClient.del(`user:${key}`);
+    await redisClient.del(key);
 
 
   }catch(error){

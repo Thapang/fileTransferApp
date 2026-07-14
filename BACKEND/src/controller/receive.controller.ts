@@ -27,27 +27,61 @@ export const rsi= async(req:Request,res:Response,next:NextFunction)=>{
 }
 
 
-export const rsa= async(req:Request,res:Response,next:NextFunction)=>{
-    try{
-    const code=req.query.code as string;
+export const rsa = async (
+    req: Request<{ code: string }>,
+    res: Response,
+    next: NextFunction
+) => {
 
-    if (!code) {
-            throw new AppError("Missing required fields", 400);
+    try {
+
+        console.log("SSE controller reached");
+
+        const code = req.params.code;
+
+        if (!code) {
+            throw new AppError(
+                "Missing required fields",
+                400
+            );
         }
 
+        const key = hashCode(code);
 
-    const key=hashCode(code);
+        res.setHeader(
+            "Content-Type",
+            "text/event-stream"
+        );
 
+        res.setHeader(
+            "Cache-Control",
+            "no-cache"
+        );
 
-    const data = await waitForAnswer(key);
+        res.setHeader(
+            "Connection",
+            "keep-alive"
+        );
 
-    return res.status(200).json({
-        ansSdp:data.answerSDP,
-        ansIce:data.answerIceCandidates
-    })
+        res.flushHeaders();
 
-    }catch(error){
+        const data = await waitForAnswer(key);
+
+        console.log(
+            "Sending SSE:",
+            data
+        );
+
+        res.write(
+            `data: ${JSON.stringify(data)}\n\n`
+        );
+
+        res.end();
+
+    } catch (error) {
+
         next(error);
+
     }
 
-}
+};
